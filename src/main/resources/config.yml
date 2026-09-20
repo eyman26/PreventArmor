@@ -1,10 +1,9 @@
 # PreventArmor Config
 # Do /preventarmor reload to reload the config.
 # made by - Eyman
-# =======================
-
 # How much damage (in half-hearts) players take when wearing armor.
-# Example: 2.0 = 1 heart
+# Example: 2.0 = 1 heart. Use 0 for no damage (warning/removal only); it can't be negative.
+# This damage ignores armor, enchantments and the Resistance effect.
 damage-amount: 2.0
 
 # Message shown in the action bar when armor is worn
@@ -13,7 +12,7 @@ warning-message: "&cArmor is forbidden!"
 # Should the plugin also remove the armor instead of just damaging? (true/false)
 remove-armor: false
 
-# How often to check (in ticks). 20 ticks = 1 second.
+# How often to check (in ticks). 20 ticks = 1 second. Minimum is 1.
 check-interval: 20
 
 # If true, only the armor pieces listed below will be blocked.
@@ -25,15 +24,14 @@ blocked-armor:
   - DIAMOND_HELMET
   - NETHERITE_CHESTPLATE
 
-# --- NBT EXEMPTION ---
 # If enabled, armor items with a specific NBT tag will be ignored by the plugin.
 # Example: an item with the tag "armor_exempt" = "true" will NOT be blocked.
+# The key may only contain letters, digits and . _ - /
 nbt-exempt:
   enabled: true
   key: "armor_exempt"
   value: "true"
 
-# --- LORE EXEMPTION ---
 # If enabled, armor items with a specific lore line will be ignored by the plugin.
 # Matching is case-insensitive and ignores color codes.
 # You can add multiple exempt lore lines below.
