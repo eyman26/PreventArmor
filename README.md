@@ -1,6 +1,11 @@
 # PreventArmor
 
 A lightweight Paper plugin that discourages players from wearing armor. Anyone caught wearing it takes periodic damage and gets a warning in their action bar. Armor can optionally be stripped off them as well. (heavily inspired by naked and afraid)
+
+## Download
+
+ [Modrinth](https://modrinth.com/plugin/preventarmor)
+
 ## Requirements
 
 - [Paper](https://papermc.io/) **1.21 or newer** (or a Paper fork such as Purpur). Plain Spigot/CraftBukkit is not supported because the plugin uses Paper's Adventure API.
