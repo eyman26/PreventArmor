@@ -1,0 +1,10 @@
+name: ${name}
+version: '${version}'
+main: org.eyman_.preventarmor
+api-version: '1.21'
+
+commands:
+  preventarmor:
+    description: Reloads the NoArmor config
+    usage: /preventarmor reload
+    permission: preventarmor.reload
