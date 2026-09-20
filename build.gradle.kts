@@ -21,7 +21,7 @@ java {
 }
 
 tasks.processResources {
-    filesMatching("paper-plugin.yml") {
+    filesMatching("plugin.yml") {
         expand(
             "version" to version,
             "name" to rootProject.name
