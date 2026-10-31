@@ -1,34 +1,18 @@
 plugins {
-    java
+    alias(libs.plugins.loom) apply false
+    alias(libs.plugins.loom.remap) apply false
 }
 
-group = "org.eyman_"
-version = "2.0"
-
-repositories {
-    mavenCentral()
-    maven("https://repo.papermc.io/repository/maven-public/")
+val collectJars by tasks.registering(Copy::class) {
+    group = "build"
+    description = "Copies every platform jar into build/dist."
+    from(project(":paper").tasks.named("jar"))
+    from(project(":fabric-1.21").tasks.named("remapJar"))
+    from(project(":fabric-26").tasks.named("jar"))
+    into(layout.buildDirectory.dir("dist"))
 }
 
-dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-tasks.processResources {
-    filesMatching("plugin.yml") {
-        expand(
-            "version" to version,
-            "name" to rootProject.name
-        )
-    }
-}
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
+tasks.register("buildAll") {
+    group = "build"
+    dependsOn(subprojects.map { it.tasks.named("build") }, collectJars)
 }

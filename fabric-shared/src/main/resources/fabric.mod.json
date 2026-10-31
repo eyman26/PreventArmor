@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "preventarmor",
+  "version": "${version}",
+  "name": "PreventArmor",
+  "description": "Damages, strips or refuses armor players aren't allowed to wear.",
+  "authors": ["Eyman"],
+  "license": "GPL-3.0-only",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["org.eyman_.preventarmor.fabric.PreventArmorMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.20.0",
+    "fabric-api": "*",
+    "minecraft": "${minecraft}",
+    "java": ">=${java}"
+  }
+}

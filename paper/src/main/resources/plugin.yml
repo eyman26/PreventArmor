@@ -1,0 +1,33 @@
+name: PreventArmor
+version: '${version}'
+main: org.eyman_.preventarmor.PreventArmor
+api-version: '1.21'
+author: Eyman
+description: Damages, strips or refuses armor players aren't allowed to wear.
+folia-supported: true
+
+commands:
+  preventarmor:
+    description: Reloads the PreventArmor config
+    usage: /preventarmor reload
+    permission: preventarmor.reload
+
+permissions:
+  preventarmor.reload:
+    description: Allows reloading the PreventArmor config
+    default: op
+  preventarmor.bypass:
+    description: May wear any armor, ignoring the whitelist and per-piece permissions
+    default: false
+  preventarmor.wear.head:
+    description: May wear blocked items in the head slot (needs permissions.enabled)
+    default: false
+  preventarmor.wear.chest:
+    description: May wear blocked items in the chest slot (needs permissions.enabled)
+    default: false
+  preventarmor.wear.legs:
+    description: May wear blocked items in the legs slot (needs permissions.enabled)
+    default: false
+  preventarmor.wear.feet:
+    description: May wear blocked items in the feet slot (needs permissions.enabled)
+    default: false

@@ -8,18 +8,16 @@ A lightweight Paper plugin that discourages players from wearing armor. Anyone c
 
 ## Requirements
 
-- [Paper](https://papermc.io/) **1.21 or newer** (or a Paper fork such as Purpur). Plain Spigot/CraftBukkit is not supported because the plugin uses Paper's Adventure API.
-- The Java version your Paper server already requires. The plugin itself is compiled for Java 21.
+| Platform | Versions | Jar |
+|---|---|---|
+| Paper (and forks) | 1.21.1 – 26.3 | `PreventArmor-paper-<version>.jar` |
+| Folia | 1.21.4 – 26.3 | same jar as Paper |
+| Fabric (server or singleplayer) | 1.21.11 | `PreventArmor-fabric-1.21.11-<version>.jar` + Fabric API |
+| Fabric | 26.3 | `PreventArmor-fabric-26.3-<version>.jar` + Fabric API |
 
-### Compatibility
-
-| Server | Status |
-|---|---|
-| Paper 1.21 – 1.21.11 | Supported (Java 21) |
-| Paper 26.1 and newer (new Mojang version scheme) | Should work. The plugin only uses long-stable Bukkit/Paper API and no server internals (Paper 26.x needs Java 25 on the server). |
-| Paper older than 1.21 | Not supported (`api-version: '1.21'`) |
-| Spigot / CraftBukkit | Not supported |
-| Folia | Not supported (uses the global Bukkit scheduler and is not marked `folia-supported`) |
+Paper 26.x and every Fabric 26.x server need Java 25; 1.21.x needs Java 21. On Fabric, permissions go through
+[fabric-permissions-api](https://github.com/lucko/fabric-permissions-api) (bundled), so LuckPerms works as usual;
+without a permissions mod, nodes that default to op fall back to permission level 2.
 
 ## Installation
 
@@ -40,8 +38,19 @@ A lightweight Paper plugin that discourages players from wearing armor. Anyone c
 | Permission | Description | Default |
 |---|---|---|
 | `preventarmor.reload` | Allows use of `/preventarmor` and `/preventarmor reload`. | Operators |
+| `preventarmor.bypass` | May wear any armor, ignoring the whitelist and per-piece rules. | Nobody |
+| `preventarmor.wear.<slot>` | `head`, `chest`, `legs` or `feet`: may wear blocked items in that slot (needs `permissions.enabled`). | Nobody |
+| `preventarmor.wear.<item>` | e.g. `preventarmor.wear.netherite_chestplate` (needs `permissions.enabled`). | Nobody |
+| `preventarmor.whitelisted` | Default whitelist node (see `whitelist.permissions`). | Nobody |
 
-> There is no "bypass" permission. To let specific players or items off the hook, use the [exemptions](#exempting-items) below.
+### Who may wear blocked armor
+
+For a blocked, non-exempt piece the checks run in this order:
+
+1. `preventarmor.bypass` → allowed.
+2. `whitelist.enabled: true` and the player is not listed in `whitelist.players` and has none of `whitelist.permissions` → refused.
+3. `permissions.enabled: true` → allowed only with `preventarmor.wear.<slot>` or `preventarmor.wear.<item>`.
+4. Otherwise → allowed if the player passed the whitelist, refused if the whitelist is off.
 
 ## Configuration
 
@@ -52,6 +61,8 @@ A lightweight Paper plugin that discourages players from wearing armor. Anyone c
 | `damage-amount` | `2.0` | Damage dealt per check, in half-hearts (`2.0` = 1 heart). `0` means no damage (message/removal only); negative values are treated as `0`. |
 | `warning-message` | `"&cArmor is forbidden!"` | Action bar message. Supports `&` color codes. |
 | `remove-armor` | `false` | If `true`, offending armor is also dropped at the player's feet. |
+| `block-equip` | `true` | Refuse unauthorized armor instead of punishing it: it goes straight back into the inventory (or on the ground if full). No damage in this mode. |
+| `equip-denied-message` | `"&cYou are not allowed to wear that."` | Action bar message when `block-equip` takes a piece off. |
 | `check-interval` | `20` | Ticks between checks (`20` = 1 second). Values below 1 are raised to 1. |
 | `block-specific` | `false` | `false` = every non-exempt item in an armor slot is blocked. `true` = only items in `blocked-armor`. |
 | `blocked-armor` | `DIAMOND_HELMET`, `NETHERITE_CHESTPLATE` | Materials to block when `block-specific` is `true`. Uses [Bukkit material names](https://jd.papermc.io/paper/org/bukkit/Material.html). |
@@ -60,6 +71,12 @@ A lightweight Paper plugin that discourages players from wearing armor. Anyone c
 | `nbt-exempt.value` | `"true"` | Value the tag must have (case-insensitive). |
 | `lore-exempt.enabled` | `true` | Enable the lore exemption. |
 | `lore-exempt.lines` | `"ONLY NETHERITE ARMOR"` | Lore lines that mark an item as exempt. Blank entries are ignored. |
+| `permissions.enabled` | `false` | Per-piece `preventarmor.wear.*` permissions. |
+| `whitelist.enabled` | `false` | Only whitelisted players may wear blocked armor at all. |
+| `whitelist.players` | `[]` | Names or UUIDs. |
+| `whitelist.permissions` | `preventarmor.whitelisted` | Holding any of these nodes counts as whitelisted. |
+
+On Fabric the same options live in `config/preventarmor.json` (camelCase keys, e.g. `blockEquip`, `whitelistPlayers`) and are reloaded with `/preventarmor reload`.
 
 > **Note:** with `block-specific: false`, *anything* in an armor slot counts, including elytra, carved pumpkins, and mob heads. Use `block-specific: true` with a `blocked-armor` list if you only want to restrict real armor pieces.
 
@@ -83,21 +100,29 @@ Give the item a lore line matching one of the entries in `lore-exempt.lines`. Ma
 
 ## How it works
 
-A repeating task runs every `check-interval` ticks. For each online survival/adventure player it looks at the four armor slots. If any item there is blocked and not exempt, the player takes `damage-amount` damage **once** (regardless of how many pieces they wear) and sees the warning in their action bar. If `remove-armor` is on, each offending piece is also removed from the armor slot and dropped at their feet.
+Every `check-interval` ticks each survival/adventure player's four armor slots are checked. On Paper and Folia
+this runs on the player's own entity scheduler (their region thread on Folia); on Fabric it runs at the end of
+the server tick.
+
+* `block-equip: true` - unauthorized pieces are moved back into the inventory as soon as they are equipped
+  (and on every check, which also catches armor put on by commands or worn while logging in).
+* `block-equip: false` - if any piece is unauthorized the player takes `damage-amount` damage **once** and sees
+  the warning; with `remove-armor` the offending pieces are also dropped at their feet.
 
 The damage is dealt as *starvation* damage, which Minecraft treats as bypassing armor points, enchantments and the Resistance effect. The side effect is that a player killed by the penalty sees the death message "starved to death".
 
 ## Building
 
-Requires JDK 21 or newer. The Gradle wrapper is included, so no separate Gradle install is needed.
+Requires JDK 21 and JDK 25 (Gradle toolchains pick them up, or downloads them via foojay).
 
 ```bash
 git clone https://github.com/eyman26/PreventArmor.git
 cd PreventArmor
-./gradlew build
+./gradlew buildAll
 ```
 
-The jar is written to `build/libs/PreventArmor-<version>.jar` (use `gradlew.bat build` on Windows).
+All jars end up in `build/dist/`. `./gradlew :paper:check` also re-compiles the Paper sources against the newest
+Paper API to catch removed API early, and `./gradlew :paper:runServer` / `:paper:runFolia` start a dev server.
 
 ## License
 

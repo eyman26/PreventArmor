@@ -4,4 +4,4 @@ out/
 
 .idea/
 *.iml
-.vscode/
+.vscode/run/
