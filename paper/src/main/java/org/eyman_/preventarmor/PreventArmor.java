@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class PreventArmor extends JavaPlugin implements Listener {
 
     private static final String RELOAD_PERMISSION = "preventarmor.reload";
+
     private volatile ArmorPolicy policy;
     private DamageSource penalty;
     private final Map<UUID, ScheduledTask> checks = new ConcurrentHashMap<>();
@@ -72,7 +73,7 @@ public final class PreventArmor extends JavaPlugin implements Listener {
         if (!current.blockEquip() || event.getNewItem().isEmpty()) return;
         Player player = event.getPlayer();
         // The slot is still mid-update while this fires; strip on the next tick of the player's own scheduler.
-        player.getScheduler().run(this, task -> strip(player, policy), null);
+        player.getScheduler().run(this, task -> strip(player, current), null);
     }
 
     private void scheduleChecks(Player player) {

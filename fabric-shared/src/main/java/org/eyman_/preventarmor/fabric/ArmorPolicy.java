@@ -44,19 +44,19 @@ final class ArmorPolicy {
     static final class Settings {
         double damageAmount = 2.0;
         String warningMessage = "&cArmor is forbidden!";
-        boolean removeArmor = false;
+        boolean removeArmor;
         boolean blockEquip = true;
         String equipDeniedMessage = "&cYou are not allowed to wear that.";
         int checkInterval = 20;
-        boolean blockSpecific = false;
+        boolean blockSpecific;
         List<String> blockedArmor = List.of("diamond_helmet", "netherite_chestplate");
         boolean nbtExemptEnabled = true;
         String nbtExemptKey = "armor_exempt";
         String nbtExemptValue = "true";
         boolean loreExemptEnabled = true;
         List<String> loreExemptLines = List.of("ONLY NETHERITE ARMOR");
-        boolean permissionsEnabled = false;
-        boolean whitelistEnabled = false;
+        boolean permissionsEnabled;
+        boolean whitelistEnabled;
         List<String> whitelistPlayers = List.of();
         List<String> whitelistPermissions = List.of("preventarmor.whitelisted");
     }
